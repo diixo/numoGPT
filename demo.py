@@ -8,13 +8,14 @@ from numogpt.utils import set_seed
 from numogpt.model import GPT
 from numogpt.bpe import Encoder, get_encoder
 from numogpt.bpe import BPETokenizer
+from numogpt.trainer import Trainer
 
 
 set_seed(3407)
 
 use_mingpt = True
 model_type = 'gpt-noomo'
-device = 'cpu'
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def generate(model, prompt='', num_samples=10, steps=20, do_sample=True):
@@ -42,10 +43,11 @@ def generate(model, prompt='', num_samples=10, steps=20, do_sample=True):
     x = x.expand(num_samples, -1)
 
     # forward the model `steps` times to get samples, in a batch
-    y = model.generate(x, max_new_tokens=steps, do_sample=do_sample, top_k=40)
+    y = model.generate(x, max_new_tokens=steps, do_sample=do_sample, top_k=50)
     
     for i in range(num_samples):
         out = tokenizer.decode(y[i].cpu().squeeze())
+        #out = tokenizer.decode(y[i].tolist())
         print('-'*80)
         print(out)
 
@@ -59,16 +61,24 @@ def main():
 
 
     enc = get_encoder()
-    encoded_text = enc.encode()
+    encoded_text = enc.encode(text)
     np_data = np.array(encoded_text, dtype=np.int32)
     data = torch.tensor(np_data, dtype=torch.long)
 
+    config = GPT.get_default_config()
+    config.model_type = "gpt-noomo"
+    config.vocab_size = len(enc.encoder.items())
+    config.block_size = 256     #block_size = context_size
+    #config.n_layer = 6
+    #config.n_head = 8
+    #config.n_embd = 256
+    model = GPT(config)
 
-    model_config = GPT.get_default_config()
-    model_config.model_type = "gpt2"
-    model_config.vocab_size = len(enc.encoder.items())
-    model_config.block_size = 256   #block_size = context_size
-    model = GPT(model_config)
+    split = int(0.9 * len(data))
+    train_data, val_data = data[:split], data[split:]
+
+    trainer = Trainer(model, train_data, val_data, config)
+    trainer.run()
 
 
 
