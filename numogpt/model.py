@@ -37,12 +37,12 @@ class CausalSelfAttention(nn.Module):
         super().__init__()
         assert config.n_embd % config.n_head == 0
         # key, query, value projections for all heads, but in a batch
-        self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=config.bias)
+        self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=True)
         # output projection
-        self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=config.bias)
+        self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=True)
         # regularization
-        self.attn_dropout = nn.Dropout(config.dropout)
-        self.resid_dropout = nn.Dropout(config.dropout)
+        self.attn_dropout = nn.Dropout(config.attn_pdrop)
+        self.resid_dropout = nn.Dropout(config.resid_pdrop)
         self.n_head = config.n_head
         self.n_embd = config.n_embd
 
@@ -141,7 +141,7 @@ class GPT(nn.Module):
                 # Gophers
                 'gopher-44m':   dict(n_layer=8, n_head=16, n_embd=512),
                 # (there are a number more...)
-                'gpt-noomo':     dict(n_layer=8, n_head=10, n_embd=256),
+                'gpt-noomo':     dict(n_layer=8, n_head=10, n_embd=240),  # 17.64M params
                 # I made these tiny models up
                 'gpt-mini':     dict(n_layer=6, n_head=6, n_embd=192),
                 'gpt-micro':    dict(n_layer=4, n_head=4, n_embd=128),

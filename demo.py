@@ -56,7 +56,7 @@ def main():
     #print("Hello noomo-ai")
     text = None
 
-    with open("data/data.txt", "r", encoding="utf-8") as f:
+    with open("data/text-f-frq-10.txt", "r", encoding="utf-8") as f:
         text = f.read()
 
 
@@ -68,7 +68,7 @@ def main():
     config = GPT.get_default_config()
     config.model_type = "gpt-noomo"
     config.vocab_size = len(enc.encoder.items())
-    config.block_size = 256     #block_size = context_size
+    config.block_size = 100     #block_size = context_size
     #config.n_layer = 6
     #config.n_head = 8
     #config.n_embd = 256
@@ -77,7 +77,10 @@ def main():
     split = int(0.9 * len(data))
     train_data, val_data = data[:split], data[split:]
 
-    trainer = Trainer(model, train_data, val_data, config)
+    #trainer = Trainer(model, train_data, val_data, config)
+    config = Trainer.get_default_config()
+    config.device = device
+    trainer = Trainer(config, model, data)
     trainer.run()
 
 
