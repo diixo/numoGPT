@@ -53,11 +53,10 @@ def generate(model, prompt='', num_samples=10, steps=20, do_sample=True):
 
 
 def main():
-    #print("Hello noomo-ai")
     text = None
 
     with open("data/text-f-frq-5.txt", "r", encoding="utf-8") as f:
-        text = f.read()
+        text = f.readlines()
 
 
     enc = get_encoder()
@@ -76,6 +75,7 @@ def main():
 
     config = Trainer.get_default_config()
     config.device = device
+    config.max_iters = None
     trainer = Trainer(config, model, data)
     trainer.run()
 

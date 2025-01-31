@@ -8,14 +8,14 @@ from collections import defaultdict
 
 import torch
 from torch.utils.data.dataloader import DataLoader
-from numogpt.utils import CfgNode as CN
+from numogpt.utils import CfgNode
 
 
 class Trainer:
 
     @staticmethod
     def get_default_config():
-        C = CN()
+        C = CfgNode()
         # device to train on
         C.device = 'auto'
         # dataloder parameters
