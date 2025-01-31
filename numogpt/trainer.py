@@ -82,15 +82,15 @@ class Trainer:
         self.iter_num = 0
         self.iter_time = time.time()
         data_iter = iter(train_loader)
-        while True:
 
+        while True:
             # fetch the next batch (x, y) and re-init iterator if needed
             try:
                 batch = next(data_iter)
             except StopIteration:
                 data_iter = iter(train_loader)
                 batch = next(data_iter)
-            batch = [t.to(self.device) for t in batch]
+            batch = [t for t in batch]
             x, y = batch
 
             # forward the model
