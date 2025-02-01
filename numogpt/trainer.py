@@ -114,6 +114,10 @@ class Trainer:
             self.iter_dt = tnow - self.iter_time
             self.iter_time = tnow
 
+            if self.iter_num % 100 == 0:
+                print(f"...on {self.iter_num}-th iter...")
+
             # termination conditions
             if config.max_iters is not None and self.iter_num >= config.max_iters:
+                print(f"...finished {self.iter_num} iter(s)")
                 break
