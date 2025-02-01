@@ -105,6 +105,28 @@ def build_dataset_with_padding(texts, block_size):
 """
 
 
+def generate_text(model: GPT, text_dataset: TextFlattenDataset, prompt: str, max_tokens=50):
+    model.eval()
+
+    tokens = text_dataset.encoder.encode(prompt)
+    x = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)  # (1, seq_len)
+
+    for _ in range(max_tokens):
+        with torch.no_grad():
+            logits, _ = model(x)
+            probs = torch.softmax(logits[:, -1, :], dim=-1)         # Get last token
+            next_token = torch.multinomial(probs, num_samples=1)    # sampling
+
+        x = torch.cat((x, next_token), dim=1)   # attach to final sequence
+
+        # Остановка по токену конца строки
+        if next_token.item() == text_dataset.encoder.encoder["<|endoftext|>"]:
+            break
+
+    return text_dataset.encoder.decode(x.squeeze().tolist())    # decoded to text
+
+
+
 def main():
     text = None
 
@@ -117,19 +139,19 @@ def main():
     config.model_type = "gpt-numo"
     config.vocab_size = text_dataset.get_vocab_size()
     config.block_size = text_dataset.get_block_size()
-    #config.n_layer = 6
-    #config.n_head = 8
-    #config.n_embd = 256
-    model = GPT(config)
+    #config.n_layer = 4
+    #config.n_head = 4
+    #config.n_embd = 128
+    gpt = GPT(config)
 
     train_config = Trainer.get_default_config()
     train_config.device = device
-    train_config.max_iters = 100
+    train_config.max_iters = 1000
     train_config.batch_size = 32
     train_config.num_workers = 0
-    trainer = Trainer(config=train_config, model=model, train_dataset=text_dataset)
+    trainer = Trainer(config=train_config, model=gpt, train_dataset=text_dataset)
     trainer.run()
-    print("...finished.")
+    generate(model=gpt, prompt="text", num_samples=5)
 
 
 
