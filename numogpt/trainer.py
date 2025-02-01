@@ -90,7 +90,8 @@ class Trainer:
             except StopIteration:
                 data_iter = iter(train_loader)
                 batch = next(data_iter)
-            batch = [t for t in batch]
+            batch = [t.to(self.device) for t in batch]
+            #x, y = batch[:config.batch_size-1], batch[1:config.batch_size]
             x, y = batch
 
             # forward the model
