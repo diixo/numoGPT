@@ -105,13 +105,14 @@ def main():
 
     X_train, Y_train = build_dataset(tokens, config.block_size)
 
-    config = Trainer.get_default_config()
-    config.device = device
-    config.max_iters = None
-    config.batch_size = 32
-    trainer = Trainer(config=config, model=model, train_dataset=(X_train, Y_train))
+    train_config = Trainer.get_default_config()
+    train_config.device = device
+    train_config.max_iters = None
+    train_config.batch_size = 32
+    train_config.num_workers = 0
+    trainer = Trainer(config=train_config, model=model, train_dataset=(X_train, Y_train))
     trainer.run()
-    print("... finished.")
+    print("...finished.")
 
 
 
