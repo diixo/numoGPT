@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
+from numogpt.trainer import Trainer
 from numogpt.utils import set_seed
 set_seed(3407)
 
@@ -89,8 +90,6 @@ model = GPT(model_config)
 # number of parameters: 0.09M
 
 # create a Trainer object
-from numogpt.trainer import Trainer
-
 train_config = Trainer.get_default_config()
 train_config.learning_rate = 5e-4 # the model we're using is so small that we can go a bit faster
 train_config.max_iters = 2000

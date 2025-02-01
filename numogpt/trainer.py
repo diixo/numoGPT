@@ -8,7 +8,9 @@ from collections import defaultdict
 
 import torch
 from torch.utils.data.dataloader import DataLoader
+from torch.utils.data import Dataset
 from numogpt.utils import CfgNode
+from numogpt.model import GPT
 
 
 class Trainer:
@@ -30,7 +32,11 @@ class Trainer:
         return C
 
 
-    def __init__(self, config, model, train_dataset):
+    def __init__(
+            self, config: CfgNode,
+            model: GPT,
+            train_dataset: Dataset
+        ):
         self.config = config
         self.model = model
         self.optimizer = None
@@ -91,7 +97,6 @@ class Trainer:
                 data_iter = iter(train_loader)
                 batch = next(data_iter)
             batch = [t.to(self.device) for t in batch]
-            #x, y = batch[:config.batch_size-1], batch[1:config.batch_size]
             x, y = batch
 
             # forward the model
