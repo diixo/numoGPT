@@ -56,7 +56,7 @@ def main():
     text = None
 
     with open("data/text-f-frq-5.txt", "r", encoding="utf-8") as f:
-        text = f.readlines()
+        text = f.read()
 
 
     enc = get_encoder()
@@ -65,7 +65,7 @@ def main():
     data = torch.tensor(np_data, dtype=torch.long)
 
     config = GPT.get_default_config()
-    config.model_type = "gpt-noomo"
+    config.model_type = "gpt-numo"
     config.vocab_size = len(enc.encoder.items())
     config.block_size = 64     #block_size = context_size
     #config.n_layer = 6

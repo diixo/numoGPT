@@ -141,11 +141,12 @@ class GPT(nn.Module):
                 # Gophers
                 'gopher-44m':   dict(n_layer=8, n_head=16, n_embd=512),
                 # (there are a number more...)
-                'gpt-noomo':     dict(n_layer=8, n_head=10, n_embd=240),  # 17.64M params
+                'gpt-noomo':    dict(n_layer=8, n_head=10, n_embd=240),   # 17.64M params
                 # I made these tiny models up
-                'gpt-mini':     dict(n_layer=6, n_head=6, n_embd=192),
-                'gpt-micro':    dict(n_layer=4, n_head=4, n_embd=128),
-                'gpt-nano':     dict(n_layer=3, n_head=3, n_embd=48),
+                'gpt-mini':     dict(n_layer=6, n_head=6, n_embd=192),    # 12.33M params
+                'gpt-micro':    dict(n_layer=4, n_head=4, n_embd=128),    #  7.23M params
+                'gpt-numo':     dict(n_layer=4, n_head=4, n_embd=64),     #  3.42M params
+                'gpt-nano':     dict(n_layer=3, n_head=3, n_embd=48),     #  2.50M params
             }[config.model_type])
 
         self.transformer = nn.ModuleDict(dict(
