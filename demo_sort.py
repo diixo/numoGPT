@@ -71,8 +71,8 @@ class SortDataset(Dataset):
 train_dataset = SortDataset('train')
 test_dataset = SortDataset('test')
 x, y = train_dataset[0]
-for a, b in zip(x,y):
-    print(int(a),int(b))
+for a, b in zip(x, y):
+    print(int(a), int(b))
 
 
 # -----------------------------------------------------------------------------
