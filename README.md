@@ -1,6 +1,6 @@
 # numoGPT
 
-## Work example: **demo.py** is minGPT::**demo.ipynb**
+Working example: **demo.py** is from minGPT::**demo.ipynb**
 
 ```
     Dataset for the Sort problem. E.g. for problem length 6:
