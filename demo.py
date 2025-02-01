@@ -14,10 +14,38 @@ from keras.preprocessing.sequence import pad_sequences
 
 set_seed(3407)
 
+
+class TextFlattenDataset(Dataset):
+
+    def build_dataset(self, tokens, block_size):
+        X, Y = [], []
+        for i in range(len(tokens) - block_size):
+            X.append(tokens[i : i + block_size])
+            Y.append(tokens[i + 1 : i + block_size + 1])
+        return torch.tensor(X), torch.tensor(Y)
+
+    def __init__(self, text, block_size):
+        self.block_size = block_size
+        self.encoder = get_encoder()
+        tokens = self.encoder.encode(text)
+        self.X, self.Y = self.build_dataset(tokens, block_size)
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.Y[idx]
+
+    def get_vocab_size(self):
+        return len(self.encoder.encoder.items())
+
+    def get_block_size(self):
+        return self.block_size
+
+
 use_mingpt = True
 model_type = 'gpt-noomo'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-encoder = get_encoder()
 
 
 def generate(model, prompt='', num_samples=10, steps=20, do_sample=True):
@@ -64,15 +92,7 @@ def generate_small():
     print(decoded)  # Вывод сгенерированного текста
 """
 
-
-def build_dataset(tokens, block_size):
-    X, Y = [], []
-    for i in range(len(tokens) - block_size):
-        X.append(tokens[i : i + block_size])
-        Y.append(tokens[i + 1 : i + block_size + 1])
-    return torch.tensor(X), torch.tensor(Y)
-
-
+"""
 def build_dataset_with_padding(texts, block_size):
     pad_token = 50256  # <|endoftext|>
     tokenized = [encoder.encode(text) for text in texts]
@@ -82,6 +102,7 @@ def build_dataset_with_padding(texts, block_size):
     X = torch.tensor(X_padded, dtype=torch.long)
     Y = torch.tensor(np.roll(X_padded, shift=-1, axis=1), dtype=torch.long)
     return X, Y
+"""
 
 
 def main():
@@ -90,27 +111,23 @@ def main():
     with open("data/train-nn.txt", "r", encoding="utf-8") as f:
         text = f.read()
 
-    tokens = encoder.encode(text)
-    #np_data = np.array(encoded_text, dtype=np.int32)
-    #data = torch.tensor(np_data, dtype=torch.long)
+    text_dataset = TextFlattenDataset(text, block_size=32)
 
     config = GPT.get_default_config()
     config.model_type = "gpt-numo"
-    config.vocab_size = len(encoder.encoder.items())
-    config.block_size = 32     #block_size = context_size
+    config.vocab_size = text_dataset.get_vocab_size()
+    config.block_size = text_dataset.get_block_size()
     #config.n_layer = 6
     #config.n_head = 8
     #config.n_embd = 256
     model = GPT(config)
 
-    X_train, Y_train = build_dataset(tokens, config.block_size)
-
     train_config = Trainer.get_default_config()
     train_config.device = device
-    train_config.max_iters = None
+    train_config.max_iters = 100
     train_config.batch_size = 32
     train_config.num_workers = 0
-    trainer = Trainer(config=train_config, model=model, train_dataset=(X_train, Y_train))
+    trainer = Trainer(config=train_config, model=model, train_dataset=text_dataset)
     trainer.run()
     print("...finished.")
 
