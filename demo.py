@@ -1,9 +1,7 @@
 
 import torch
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
-import numpy as np
 from torch.utils.data import Dataset
-from torch.utils.data.dataloader import DataLoader
 from numogpt.utils import set_seed
 from numogpt.model import GPT
 from numogpt.bpe import Encoder, get_encoder
@@ -13,6 +11,11 @@ from keras.preprocessing.sequence import pad_sequences
 
 
 set_seed(3407)
+
+
+use_mingpt = True
+model_type = "gpt-numo"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class TextFlattenDataset(Dataset):
@@ -43,10 +46,6 @@ class TextFlattenDataset(Dataset):
         return self.block_size
 
 
-use_mingpt = True
-model_type = 'gpt-noomo'
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 def generate(model, prompt='', num_samples=10, steps=20, do_sample=True):
         
@@ -74,11 +73,11 @@ def generate(model, prompt='', num_samples=10, steps=20, do_sample=True):
 
     # forward the model `steps` times to get samples, in a batch
     y = model.generate(x, max_new_tokens=steps, do_sample=do_sample, top_k=50)
-    
+
     for i in range(num_samples):
         out = tokenizer.decode(y[i].cpu().squeeze())
         #out = tokenizer.decode(y[i].tolist())
-        print('-'*80)
+        print('-' * 80)
         print(out)
 
 
@@ -119,7 +118,6 @@ def generate_text(model: GPT, text_dataset: TextFlattenDataset, prompt: str, max
 
         x = torch.cat((x, next_token), dim=1)   # attach to final sequence
 
-        # Остановка по токену конца строки
         if next_token.item() == text_dataset.encoder.encoder["<|endoftext|>"]:
             break
 
@@ -136,12 +134,10 @@ def main():
     text_dataset = TextFlattenDataset(text, block_size=32)
 
     config = GPT.get_default_config()
-    config.model_type = "gpt-numo"
+    config.model_type = model_type
     config.vocab_size = text_dataset.get_vocab_size()
     config.block_size = text_dataset.get_block_size()
-    #config.n_layer = 4
-    #config.n_head = 4
-    #config.n_embd = 128
+
     gpt = GPT(config)
 
     train_config = Trainer.get_default_config()

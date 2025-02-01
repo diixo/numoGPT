@@ -115,7 +115,7 @@ class Trainer:
             self.iter_time = tnow
 
             if self.iter_num % 100 == 0:
-                print(f"...on {self.iter_num}-th iter...")
+                print(f"...on {self.iter_num}th iter...")
 
             # termination conditions
             if config.max_iters is not None and self.iter_num >= config.max_iters:
