@@ -122,7 +122,7 @@ def main():
     model_config.vocab_size = text_dataset.get_vocab_size()
     model_config.block_size = text_dataset.get_block_size()
 
-    gpt = GPT(model_config)
+    model = GPT(model_config)
 
     #---------------------------------------------------------------------------
 
@@ -131,20 +131,22 @@ def main():
     train_config.max_iters = 2000
     train_config.batch_size = 32
     train_config.num_workers = 0
-    trainer = Trainer(train_config, gpt, text_dataset)
+    trainer = Trainer(train_config, model, text_dataset)
 
     trainer.run()
     print('-' * 80)
 
+    #torch.save(model.state_dict(), "models/model-4-4-64-5k.pth")
+
     #---------------------------------------------------------------------------
 
-    val_loss, ppl = evaluate_gpt(gpt, text_dataset, train_config.batch_size, train_config.device)
+    val_loss, ppl = evaluate_gpt(model, text_dataset, train_config.batch_size, train_config.device)
     print(f"val_loss={val_loss:.4f}, perplexity(PPL)={ppl:.4f}")
 
     #---------------------------------------------------------------------------
 
     #generate(model=gpt, prompt="text", num_samples=5)
-    generate_n_words(model=gpt, dataset=text_dataset, prompt="text", n_words=10)
+    generate_n_words(model=model, dataset=text_dataset, prompt="text", n_words=10)
 
 
 
