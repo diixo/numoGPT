@@ -19,7 +19,7 @@ class Trainer:
     def get_default_config():
         C = CfgNode()
         # device to train on
-        C.device = 'auto'
+        C.device = "auto"
         # dataloder parameters
         C.num_workers = 4
         # optimizer parameters
@@ -56,6 +56,16 @@ class Trainer:
         self.iter_time = 0.0
         self.iter_dt = 0.0
 
+        # setup the dataloader
+        self.data_loader = DataLoader(
+            self.train_dataset,
+            sampler=torch.utils.data.RandomSampler(self.train_dataset, replacement=True, num_samples=int(1e10)),
+            shuffle=False,
+            pin_memory=True,
+            batch_size=config.batch_size,
+            num_workers=config.num_workers,
+        )
+
 
     def add_callback(self, onevent: str, callback):
         self.callbacks[onevent].append(callback)
@@ -74,27 +84,17 @@ class Trainer:
         # setup the optimizer
         self.optimizer = model.configure_optimizers(config)
 
-        # setup the dataloader
-        train_loader = DataLoader(
-            self.train_dataset,
-            sampler=torch.utils.data.RandomSampler(self.train_dataset, replacement=True, num_samples=int(1e10)),
-            shuffle=False,
-            pin_memory=True,
-            batch_size=config.batch_size,
-            num_workers=config.num_workers,
-        )
-
         model.train()
         self.iter_num = 0
         self.iter_time = time.time()
-        data_iter = iter(train_loader)
+        data_iter = iter(self.data_loader)
 
         while True:
             # fetch the next batch (x, y) and re-init iterator if needed
             try:
                 batch = next(data_iter)
             except StopIteration:
-                data_iter = iter(train_loader)
+                data_iter = iter(self.data_loader)
                 batch = next(data_iter)
             batch = [t.to(self.device) for t in batch]
             x, y = batch

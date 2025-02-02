@@ -1,7 +1,7 @@
-
+import math
 import torch
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from numogpt.utils import set_seed
 from numogpt.model import GPT
 from numogpt.bpe import Encoder, get_encoder
@@ -144,6 +144,37 @@ def generate_n_words(
     print('-' * 80)
 
 
+def evaluate_gpt(model: GPT, dataloader: DataLoader, device: str):
+    model.eval()
+    total_loss = 0
+    total_tokens = 0
+    criterion = torch.nn.CrossEntropyLoss()
+
+    print(f"evaluate_gpt.sz={len(dataloader)}")
+    i_b = 0
+    with torch.no_grad():
+        for batch in dataloader:
+            i_b += 1
+            print("<<", str(i_b))
+
+            batch = [t.to(device) for t in batch]
+
+            inputs, targets = batch
+            inputs, targets = inputs.to(device), targets.to(device)
+
+            logits, _ = model(inputs)                   # minGPT returns (logits, loss=None)
+            logits = logits.view(-1, logits.size(-1))   # (B * seq_len-1, vocab_size)
+            targets = targets.reshape(-1)               # (B * seq_len-1)
+
+            loss = criterion(logits, targets)           # CrossEntropyLoss
+            total_loss += loss.item() * targets.numel()
+            total_tokens += targets.numel()
+
+    avg_loss = total_loss / total_tokens
+    ppl = math.exp(avg_loss)  # Perplexity
+
+    return avg_loss, ppl
+
 
 def main():
     text = None
@@ -161,12 +192,16 @@ def main():
     gpt = GPT(config)
 
     train_config = Trainer.get_default_config()
-    train_config.device = device
-    train_config.max_iters = 1000
+    train_config.device = "cpu"
+    train_config.max_iters = 200
     train_config.batch_size = 32
     train_config.num_workers = 0
     trainer = Trainer(config=train_config, model=gpt, train_dataset=text_dataset)
+
     trainer.run()
+
+    #val_loss, ppl = evaluate_gpt(gpt, trainer.data_loader, train_config.device)
+    #print(f"val_loss={val_loss:.4f}, perplexity(PPL)={ppl:.4f}")
 
     #generate(model=gpt, prompt="text", num_samples=5)
     generate_n_words(model=gpt, dataset=text_dataset, prompt="text", n_words=10)
