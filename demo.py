@@ -128,7 +128,7 @@ def generate_n_words(
     tokens = dataset.encoder.encode(prompt)
     x = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
 
-    # Generate maximum of 3*n_words tokens (to cut-off unnecessary ones)
+    # Generate maximum of 2*n_words tokens (to cut-off unnecessary ones)
     max_tokens = len(tokens) + 2 * n_words
     generated_tokens = model.generate(x, max_new_tokens=max_tokens, temperature=temperature, top_k=top_k, do_sample=False)
 
@@ -144,19 +144,18 @@ def generate_n_words(
     print('-' * 80)
 
 
-def evaluate_gpt(model: GPT, dataloader: DataLoader, device: str):
+def evaluate_gpt(model: GPT, dataset: Dataset, batch_sz: int, device: str):
     model.eval()
     total_loss = 0
     total_tokens = 0
     criterion = torch.nn.CrossEntropyLoss()
 
-    print(f"evaluate_gpt.sz={len(dataloader)}")
-    i_b = 0
+    dataloader = DataLoader(dataset, batch_size=batch_sz, shuffle=False, pin_memory=True, num_workers=0)
+
+    print(f"evaluate_gpt:: sz={len(dataloader)}, batch_sz={batch_sz}")
+
     with torch.no_grad():
         for batch in dataloader:
-            i_b += 1
-            print("<<", str(i_b))
-
             batch = [t.to(device) for t in batch]
 
             inputs, targets = batch
@@ -184,24 +183,33 @@ def main():
 
     text_dataset = TextFlattenDataset(text, block_size=32)
 
-    config = GPT.get_default_config()
-    config.model_type = model_type
-    config.vocab_size = text_dataset.get_vocab_size()
-    config.block_size = text_dataset.get_block_size()
+    #---------------------------------------------------------------------------
 
-    gpt = GPT(config)
+    model_config = GPT.get_default_config()
+    model_config.model_type = model_type
+    model_config.vocab_size = text_dataset.get_vocab_size()
+    model_config.block_size = text_dataset.get_block_size()
+
+    gpt = GPT(model_config)
+
+    #---------------------------------------------------------------------------
 
     train_config = Trainer.get_default_config()
     train_config.device = "cpu"
-    train_config.max_iters = 200
+    train_config.max_iters = 2000
     train_config.batch_size = 32
     train_config.num_workers = 0
-    trainer = Trainer(config=train_config, model=gpt, train_dataset=text_dataset)
+    trainer = Trainer(train_config, gpt, text_dataset)
 
     trainer.run()
+    print('-' * 80)
 
-    #val_loss, ppl = evaluate_gpt(gpt, trainer.data_loader, train_config.device)
-    #print(f"val_loss={val_loss:.4f}, perplexity(PPL)={ppl:.4f}")
+    #---------------------------------------------------------------------------
+
+    val_loss, ppl = evaluate_gpt(gpt, text_dataset, train_config.batch_size, train_config.device)
+    print(f"val_loss={val_loss:.4f}, perplexity(PPL)={ppl:.4f}")
+
+    #---------------------------------------------------------------------------
 
     #generate(model=gpt, prompt="text", num_samples=5)
     generate_n_words(model=gpt, dataset=text_dataset, prompt="text", n_words=10)
