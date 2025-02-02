@@ -1,6 +1,6 @@
 
 # code from mingpt/utils.py
-
+import math
 import os
 import sys
 import json
@@ -9,6 +9,7 @@ from ast import literal_eval
 
 import numpy as np
 import torch
+from torch.utils.data import Dataset, DataLoader
 
 # -----------------------------------------------------------------------------
 
@@ -104,3 +105,34 @@ class CfgNode:
             # overwrite the attribute
             print("command line overwriting config attribute %s with %s" % (key, val))
             setattr(obj, leaf_key, val)
+
+
+def evaluate_gpt(model, dataset: Dataset, batch_sz: int, device: str):
+    model.eval()
+    total_loss = 0
+    total_tokens = 0
+    criterion = torch.nn.CrossEntropyLoss()
+
+    dataloader = DataLoader(dataset, batch_size=batch_sz, shuffle=False, pin_memory=True, num_workers=0)
+
+    print(f"evaluate_gpt:: sz={len(dataloader)}, batch_sz={batch_sz}")
+
+    with torch.no_grad():
+        for batch in dataloader:
+            batch = [t.to(device) for t in batch]
+
+            inputs, targets = batch
+            inputs, targets = inputs.to(device), targets.to(device)
+
+            logits, _ = model(inputs)                   # minGPT returns (logits, loss=None)
+            logits = logits.view(-1, logits.size(-1))   # (B * seq_len-1, vocab_size)
+            targets = targets.reshape(-1)               # (B * seq_len-1)
+
+            loss = criterion(logits, targets)           # CrossEntropyLoss
+            total_loss += loss.item() * targets.numel()
+            total_tokens += targets.numel()
+
+    avg_loss = total_loss / total_tokens
+    ppl = math.exp(avg_loss)
+
+    return avg_loss, ppl

@@ -1,12 +1,10 @@
-import math
 import torch
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
-from torch.utils.data import Dataset, DataLoader
-from numogpt.utils import set_seed
+from numogpt.utils import set_seed, evaluate_gpt
 from numogpt.model import GPT
-from numogpt.bpe import Encoder, get_encoder
 from numogpt.bpe import BPETokenizer
 from numogpt.trainer import Trainer
+from numogpt.text_dataset import TextFlattenDataset
 from keras.preprocessing.sequence import pad_sequences
 
 
@@ -16,35 +14,6 @@ set_seed(3407)
 use_mingpt = True
 model_type = "gpt-numo"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-class TextFlattenDataset(Dataset):
-
-    def build_dataset(self, tokens, block_size):
-        X, Y = [], []
-        for i in range(len(tokens) - block_size):
-            X.append(tokens[i : i + block_size])
-            Y.append(tokens[i + 1 : i + block_size + 1])
-        return torch.tensor(X), torch.tensor(Y)
-
-    def __init__(self, text, block_size):
-        self.block_size = block_size
-        self.encoder = get_encoder()
-        tokens = self.encoder.encode(text)
-        self.X, self.Y = self.build_dataset(tokens, block_size)
-
-    def __len__(self):
-        return len(self.X)
-
-    def __getitem__(self, idx):
-        return self.X[idx], self.Y[idx]
-
-    def get_vocab_size(self):
-        return len(self.encoder.encoder.items())
-
-    def get_block_size(self):
-        return self.block_size
-
 
 
 def generate(model: GPT, prompt="", num_samples=10, steps=20, do_sample=True):
@@ -144,46 +113,10 @@ def generate_n_words(
     print('-' * 80)
 
 
-def evaluate_gpt(model: GPT, dataset: Dataset, batch_sz: int, device: str):
-    model.eval()
-    total_loss = 0
-    total_tokens = 0
-    criterion = torch.nn.CrossEntropyLoss()
-
-    dataloader = DataLoader(dataset, batch_size=batch_sz, shuffle=False, pin_memory=True, num_workers=0)
-
-    print(f"evaluate_gpt:: sz={len(dataloader)}, batch_sz={batch_sz}")
-
-    with torch.no_grad():
-        for batch in dataloader:
-            batch = [t.to(device) for t in batch]
-
-            inputs, targets = batch
-            inputs, targets = inputs.to(device), targets.to(device)
-
-            logits, _ = model(inputs)                   # minGPT returns (logits, loss=None)
-            logits = logits.view(-1, logits.size(-1))   # (B * seq_len-1, vocab_size)
-            targets = targets.reshape(-1)               # (B * seq_len-1)
-
-            loss = criterion(logits, targets)           # CrossEntropyLoss
-            total_loss += loss.item() * targets.numel()
-            total_tokens += targets.numel()
-
-    avg_loss = total_loss / total_tokens
-    ppl = math.exp(avg_loss)  # Perplexity
-
-    return avg_loss, ppl
-
 
 def main():
-    text = None
 
-    with open("data/train-nn.txt", "r", encoding="utf-8") as f:
-        text = f.read()
-
-    text_dataset = TextFlattenDataset(text, block_size=32)
-
-    #---------------------------------------------------------------------------
+    text_dataset = TextFlattenDataset("data/train-nn.txt", block_size=32)
 
     model_config = GPT.get_default_config()
     model_config.model_type = model_type
