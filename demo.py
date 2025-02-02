@@ -6,11 +6,13 @@ from numogpt.bpe import BPETokenizer
 from numogpt.trainer import Trainer
 from numogpt.text_dataset import TextFlattenDataset
 from keras.preprocessing.sequence import pad_sequences
+from pathlib import Path
 
 
 set_seed(3407)
 
 
+model_path = "models/model-4-4-64-5k.pth"
 use_mingpt = True
 model_type = "gpt-numo"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -133,10 +135,13 @@ def main():
     train_config.num_workers = 0
     trainer = Trainer(train_config, model, text_dataset)
 
-    trainer.run()
-    print('-' * 80)
+    if Path(model_path).exists():
+        model.load_state_dict(torch.load(model_path))
+    else:
+        trainer.run()
+        print('-' * 80)
 
-    #torch.save(model.state_dict(), "models/model-4-4-64-5k.pth")
+        torch.save(model.state_dict(), model_path)
 
     #---------------------------------------------------------------------------
 
