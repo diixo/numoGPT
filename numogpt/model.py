@@ -291,6 +291,32 @@ class GPT(nn.Module):
         return logits, loss
 
 
+    def get_context_embedding(self, idx):
+        # Extract context embedding
+        # idx: LongTensor (b, t) — indices of tokens for input text
+        embedding = self.transformer.wte(idx)  # wte - embeddings layer for tokens
+        return embedding.mean(dim=1)  # average over all tokens, with obtaining embedding for the context
+
+
+    def adjust_probabilities_with_context(self, logits, idx, threshold=0.5):
+        context_embedding = self.get_context_embedding(idx)
+
+        # convert logits into probabilities
+        probs = F.softmax(logits, dim=-1)
+
+        # for each token in logits calculate its similarity with context
+        for i in range(probs.size(-1)):
+            token_embedding = self.transformer.wte.weight[i]
+            similarity = torch.cosine_similarity(context_embedding, token_embedding.unsqueeze(0), dim=-1)
+
+            if similarity < threshold:
+                probs[:, i] = 0
+
+        # normalize probs
+        probs = probs / probs.sum(dim=-1, keepdim=True)
+        return probs
+
+
     @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None):
         """
@@ -305,6 +331,8 @@ class GPT(nn.Module):
             logits, _ = self(idx_cond)
             # pluck the logits at the final step and scale by desired temperature
             logits = logits[:, -1, :] / temperature
+            # apply the probability adjustment function by taking into account the context
+            # probs = self.adjust_probabilities_with_context(logits, idx, 0.5) # 0.70711=sqrt(0.5)
             # optionally crop the logits to only the top k options
             if top_k is not None:
                 v, _ = torch.topk(logits, top_k)
