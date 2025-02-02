@@ -47,7 +47,7 @@ class TextFlattenDataset(Dataset):
 
 
 
-def generate(model, prompt='', num_samples=10, steps=20, do_sample=True):
+def generate(model: GPT, prompt="", num_samples=10, steps=20, do_sample=True):
         
     # tokenize the input prompt into integer input sequence
     if use_mingpt:
@@ -81,15 +81,6 @@ def generate(model, prompt='', num_samples=10, steps=20, do_sample=True):
         print(out)
 
 
-"""
-def generate_small():
-    bpe_tokenizer = BPETokenizer()
-    context = torch.tensor([[bpe_tokenizer.encoder['<|endoftext|>']]], dtype=torch.long)
-    generated_text = model.generate(context, max_new_tokens=100)
-
-    decoded = bpe_tokenizer.decode(generated_text[0].tolist())
-    print(decoded)  # Вывод сгенерированного текста
-"""
 
 """
 def build_dataset_with_padding(texts, block_size):
@@ -124,6 +115,35 @@ def generate_text(model: GPT, text_dataset: TextFlattenDataset, prompt: str, max
     return text_dataset.encoder.decode(x.squeeze().tolist())    # decoded to text
 
 
+def generate_n_words(
+        model: GPT,
+        dataset: TextFlattenDataset,
+        prompt: str,
+        n_words=10,
+        temperature=1.0,
+        top_k=10
+    ):
+    model.eval()
+
+    tokens = dataset.encoder.encode(prompt)
+    x = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
+
+    # Generate maximum of 3*n_words tokens (to cut-off unnecessary ones)
+    max_tokens = len(tokens) + 2 * n_words
+    generated_tokens = model.generate(x, max_new_tokens=max_tokens, temperature=temperature, top_k=top_k, do_sample=False)
+
+    generated_text = dataset.encoder.decode(generated_tokens.squeeze().tolist())
+
+    cleaned_text = generated_text.replace("<|endoftext|>", "").replace("\n", " ")
+
+    words = cleaned_text.split()
+    trimmed_text = " ".join(words[:n_words])
+
+    print('-' * 80)
+    print(trimmed_text)
+    print('-' * 80)
+
+
 
 def main():
     text = None
@@ -147,7 +167,9 @@ def main():
     train_config.num_workers = 0
     trainer = Trainer(config=train_config, model=gpt, train_dataset=text_dataset)
     trainer.run()
-    generate(model=gpt, prompt="text", num_samples=5)
+
+    #generate(model=gpt, prompt="text", num_samples=5)
+    generate_n_words(model=gpt, dataset=text_dataset, prompt="text", n_words=10)
 
 
 
