@@ -80,7 +80,6 @@ def generate_text(model: GPT, text_dataset: TextFlattenDataset, prompt: str, max
 
         if next_token.item() == text_dataset.encoder.encoder["<|endoftext|>"]:
             break
-
     return text_dataset.encoder.decode(x.squeeze().tolist())    # decoded to text
 
 
