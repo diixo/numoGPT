@@ -2,7 +2,7 @@ import torch
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from numogpt.utils import set_seed, evaluate_gpt
 from numogpt.model import GPT
-from numogpt.bpe import BPETokenizer
+from numogpt.bpe import BPETokenizer, get_encoder
 from numogpt.trainer import Trainer
 from numogpt.text_dataset import TextFlattenDataset
 from keras.preprocessing.sequence import pad_sequences
@@ -11,7 +11,7 @@ from pathlib import Path
 
 set_seed(3407)
 
-context_sz = 32
+context_sz = 8
 max_iters = 5000
 model_type = "gpt-numo"
 use_mingpt = True
@@ -114,20 +114,38 @@ def generate_n_words(
     print('-' * 80)
 
 
-def predict_next_word(model: GPT, dataset: TextFlattenDataset, prompt: str):
+def predict_next(model: GPT, dataset: TextFlattenDataset, prompt: str):
     model.eval()
 
     tokens = dataset.encoder.encode(prompt)
-    id = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
+    idx = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
 
-    generated_tokens = model.predict_next_word(id, top_k=10)
+    next_id = model.predict_next_word(idx, top_k=10)
 
-    next_word = dataset.encoder.decode(generated_tokens.squeeze().tolist())
+    next_word = dataset.encoder.decode(next_id)
 
     print('-' * 80)
     print(f"predict_next_word({prompt}:{next_word})")
     print('-' * 80)
 
+
+@torch.no_grad()
+def predict_next_word(model, text, device="cpu"):
+    model.eval()
+    encoder = get_encoder()
+    tokens = encoder.encode(text)
+    idx = torch.tensor(tokens, dtype=torch.long, device=device).unsqueeze(0)
+
+    logits, _ = model(idx)
+    logits = logits[:, -1, :]
+
+    probs = torch.softmax(logits, dim=-1)
+    predicted_token_id = torch.argmax(probs, dim=-1).item()
+
+    next_word = encoder.decode([predicted_token_id])
+    print('-' * 80)
+    print(f"predict_next_word({text}):{next_word}")
+    print('-' * 80)
 
 
 def main():
