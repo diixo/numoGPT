@@ -11,10 +11,10 @@ from pathlib import Path
 
 set_seed(3407)
 
-
-model_path = "models/model-4-4-64-5k.pth"
-use_mingpt = True
+max_iters = 2000
+context_sz = 8
 model_type = "gpt-numo"
+use_mingpt = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -117,20 +117,22 @@ def generate_n_words(
 
 def main():
 
-    text_dataset = TextFlattenDataset("data/train-nn.txt", block_size=32)
+    text_dataset = TextFlattenDataset("data/train-nn.txt", block_size=context_sz)
 
-    model_config = GPT.get_default_config()
-    model_config.model_type = model_type
-    model_config.vocab_size = text_dataset.get_vocab_size()
-    model_config.block_size = text_dataset.get_block_size()
+    gpt_config = GPT.get_default_config()
+    gpt_config.model_type = model_type
+    gpt_config.vocab_size = text_dataset.get_vocab_size()
+    gpt_config.block_size = text_dataset.get_block_size()
 
-    model = GPT(model_config)
+    model = GPT(gpt_config)
+
+    model_path = f"models/gpt-{context_sz}-{gpt_config.n_layer}-{gpt_config.n_head}-{gpt_config.n_embd}-{int(max_iters/1000)}k.pth"
 
     #---------------------------------------------------------------------------
 
     train_config = Trainer.get_default_config()
     train_config.device = "cpu"
-    train_config.max_iters = 2000
+    train_config.max_iters = max_iters
     train_config.batch_size = 32
     train_config.num_workers = 0
     trainer = Trainer(train_config, model, text_dataset)
