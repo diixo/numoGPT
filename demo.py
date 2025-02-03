@@ -12,7 +12,7 @@ from pathlib import Path
 set_seed(3407)
 
 context_sz = 8
-max_iters = 5000
+max_iters = 2000
 model_type = "gpt-numo"
 use_mingpt = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -114,15 +114,17 @@ def generate_n_words(
     print('-' * 80)
 
 
+@torch.no_grad()
 def predict_next(model: GPT, dataset: TextFlattenDataset, prompt: str):
     model.eval()
 
     tokens = dataset.encoder.encode(prompt)
     idx = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
 
-    next_id = model.predict_next_word(idx, top_k=10)
+    idx_next = model.predict_next_word(idx, top_k=10)
 
-    next_word = dataset.encoder.decode(next_id)
+    #next_word = dataset.encoder.decode(next_id.squeeze().tolist())
+    next_word = dataset.encoder.decode([idx_next.item()])
 
     print('-' * 80)
     print(f"predict_next_word({prompt}:{next_word})")
@@ -130,21 +132,21 @@ def predict_next(model: GPT, dataset: TextFlattenDataset, prompt: str):
 
 
 @torch.no_grad()
-def predict_next_word(model, text, device="cpu"):
+def predict_next_word(model: GPT, dataset: TextFlattenDataset, word: str, device="cpu"):
     model.eval()
-    encoder = get_encoder()
-    tokens = encoder.encode(text)
+
+    tokens = dataset.encoder.encode(word)
     idx = torch.tensor(tokens, dtype=torch.long, device=device).unsqueeze(0)
 
     logits, _ = model(idx)
     logits = logits[:, -1, :]
 
     probs = torch.softmax(logits, dim=-1)
-    predicted_token_id = torch.argmax(probs, dim=-1).item()
+    predicted_id = torch.argmax(probs, dim=-1).item()
 
-    next_word = encoder.decode([predicted_token_id])
+    next_word = dataset.encoder.decode([predicted_id])
     print('-' * 80)
-    print(f"predict_next_word({text}):{next_word}")
+    print(f"predict_next_word({word}):{next_word}")
     print('-' * 80)
 
 
@@ -187,6 +189,7 @@ def main():
 
     #generate(model=gpt, prompt="text", num_samples=5)
     generate_n_words(model=model, dataset=text_dataset, prompt="text", n_words=10)
+    #predict_next(model, text_dataset, "text")
     #predict_next_word(model, text_dataset, "text")
 
 
