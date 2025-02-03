@@ -1,8 +1,8 @@
 # numoGPT
 
-* Alternative repository of minGPT implementation by Andrej Karpathy.
-* Example has been implemented additionally, that demonstrated training on a simple text file.
-* Embedded openai's: tokens volabulary, json-vocabulary token indices of encoder
+* Alternative repository of minGPT, implemented by Andrej Karpathy.
+* Demo has been implemented additionally, that demonstrated training on an input text file.
+* Embedded openai's: tokens volabulary, json-vocabulary indices of encoder
 
 
 ## Model:

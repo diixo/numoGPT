@@ -11,8 +11,8 @@ from pathlib import Path
 
 set_seed(3407)
 
-max_iters = 2000
-context_sz = 8
+context_sz = 32
+max_iters = 5000
 model_type = "gpt-numo"
 use_mingpt = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -126,7 +126,7 @@ def main():
 
     model = GPT(gpt_config)
 
-    model_path = f"models/gpt-{context_sz}-{gpt_config.n_layer}-{gpt_config.n_head}-{gpt_config.n_embd}-{int(max_iters/1000)}k.pth"
+    model_path = f"models/model-{context_sz}-{gpt_config.n_layer}-{gpt_config.n_head}-{gpt_config.n_embd}-{int(max_iters/1000)}k.pth"
 
     #---------------------------------------------------------------------------
 
