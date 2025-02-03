@@ -114,6 +114,21 @@ def generate_n_words(
     print('-' * 80)
 
 
+def predict_next_word(model: GPT, dataset: TextFlattenDataset, prompt: str):
+    model.eval()
+
+    tokens = dataset.encoder.encode(prompt)
+    id = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
+
+    generated_tokens = model.predict_next_word(id, top_k=10)
+
+    next_word = dataset.encoder.decode(generated_tokens.squeeze().tolist())
+
+    print('-' * 80)
+    print(f"predict_next_word({prompt}:{next_word})")
+    print('-' * 80)
+
+
 
 def main():
 
@@ -154,6 +169,7 @@ def main():
 
     #generate(model=gpt, prompt="text", num_samples=5)
     generate_n_words(model=model, dataset=text_dataset, prompt="text", n_words=10)
+    #predict_next_word(model, text_dataset, "text")
 
 
 

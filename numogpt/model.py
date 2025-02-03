@@ -348,3 +348,55 @@ class GPT(nn.Module):
             idx = torch.cat((idx, idx_next), dim=1)
 
         return idx
+
+
+    @torch.no_grad()
+    def predict_next_word(self, idx, temperature=1.0, do_sample=False, top_k=None, top_p=None, stop_words=None):
+
+        idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
+
+        logits, _ = self(idx_cond)
+        logits = logits[:, -1, :] / temperature
+
+        if top_k is not None:
+            v, _ = torch.topk(logits, top_k)
+            logits[logits < v[:, [-1]]] = -float("Inf")
+
+        if top_p is not None:
+            probs = F.softmax(logits, dim=-1)
+            sorted_probs, sorted_indices = torch.sort(probs, descending=True)
+            cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
+            cutoff = cumulative_probs > top_p
+            sorted_probs[cutoff] = 0
+            probs = torch.zeros_like(logits).scatter_(-1, sorted_indices, sorted_probs)
+        else:
+            probs = F.softmax(logits, dim=-1)
+
+        """
+        if stop_words and hasattr(self, 'tokenizer'):
+            stop_word_ids = [self.tokenizer.encoder[word] for word in stop_words if word in self.tokenizer.encoder]
+            logits[:, stop_word_ids] = -float("Inf")
+            probs = F.softmax(logits, dim=-1)
+        """
+
+        if do_sample:
+            idx_next = torch.multinomial(probs, num_samples=1)
+        else:
+            _, idx_next = torch.topk(probs, k=1, dim=-1)
+
+        return idx_next  # (b, 1)
+
+
+"""
+def adjust_probabilities_with_semantics(probs, idx, semantic_model):
+    # Получаем семантическую оценку текущего контекста
+    context_embedding = get_context_embedding(idx)  # например, через BERT, GPT или другие модели
+    semantic_scores = semantic_model.predict(context_embedding)
+
+    # Снижаем вероятность для токенов, которые не соответствуют семантическому контексту
+    for token_idx in range(probs.size(-1)):
+        if not is_semantically_appropriate(token_idx, semantic_scores):
+            probs[:, token_idx] = 0  # Обнуляем вероятность для неподобающих токенов
+
+    return probs
+"""
