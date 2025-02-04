@@ -1,3 +1,4 @@
+import tensorflow as tf
 import re
 from pathlib import Path
 
@@ -34,11 +35,18 @@ def str_tokenize_words(s: str):
 def str_tokenize_words(s: str):
     s = re.findall("(\.?\w[\w'\.&-]*\w|\w\+*#?)", s)
     if s: return s
-    return [] 
+    return []
 """
 
 def str_tokenize(sentence, stopwords: set):
-    return [ word for word in str_tokenize_words(sentence.lower()) if word not in stopwords ] 
+    return [ word for word in str_tokenize_words(sentence.lower()) if word not in stopwords ]
+
+
+# wordacy-nn
+def custom_standardization(input_string: str):
+    lowercased = tf.strings.lower(input_string)
+    punctuation = " #%$!?:,;\" @~&()*_<=>{|}[/]^\\"
+    return tf.strings.regex_replace(lowercased, f"([{punctuation}])", r" \1")
 
 
 #********************************************************************************************************
