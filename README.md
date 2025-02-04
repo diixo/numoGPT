@@ -16,6 +16,8 @@ Working demo: [demo.py](demo.py)
 * context: **32**
 * params:  **3.42M**
 
+
+### context-size=32:
 ```
 number of parameters: 3.42M
 running on device: cpu
@@ -33,10 +35,17 @@ running on device: cpu
 ...on 5000th iter...
 ...finished 5000 iter(s)
 --------------------------------------------------------------------------------
-evaluate_gpt:: sz=320, batch_sz=32
-val_loss=0.2281, perplexity(PPL)=1.2562
+evaluate_gpt:: sz=174, batch_sz=32
+val_loss=0.1330, perplexity(PPL)=1.1422
+--------------------------------------------------------------------------------
+text cluster result weight list weight list length number labels
 --------------------------------------------------------------------------------
 ```
+
+
+
+### context-size=64:
+
 
 
 ### Embedded:
