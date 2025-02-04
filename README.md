@@ -38,7 +38,7 @@ running on device: cpu
 evaluate_gpt:: sz=174, batch_sz=32
 val_loss=0.1330, perplexity(PPL)=1.1422
 --------------------------------------------------------------------------------
-text cluster result weight list weight list length number labels
+text cluster result weight list
 --------------------------------------------------------------------------------
 ```
 
