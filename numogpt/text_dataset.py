@@ -1,7 +1,7 @@
 
 import torch
-from torch.utils.data import Dataset
 from numogpt.bpe import get_encoder
+from torch.utils.data import Dataset
 
 
 class TextFlattenDataset(Dataset):
