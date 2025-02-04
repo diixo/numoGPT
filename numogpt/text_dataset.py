@@ -1,8 +1,22 @@
-
+import re
 import torch
 from numogpt.bpe import get_encoder
 from torch.utils.data import Dataset
+from pathlib import Path
 
+
+def load_stopwords(file_path: str):
+    f = Path(file_path)
+    if f.exists():
+        return set([line.replace('\n', '') for line in open(str(f), 'r', encoding='utf-8').readlines()])
+    return set()
+
+
+# (wordacy-nn) original modified: #removed hypher
+def str_tokenize_words(s: str):
+    s = re.findall("(\.?\w[\w'\.&]*\w|\w\+*#?)", str.lower(s))
+    if s: return s
+    return []
 
 class TextFlattenDataset(Dataset):
 
@@ -14,10 +28,13 @@ class TextFlattenDataset(Dataset):
         return torch.tensor(X), torch.tensor(Y)
 
 
-    def __init__(self, path_file: str, block_size: int):
+    def __init__(self, path_file: str, block_size: int, stopwords_path: str=None):
         text = None
+        stop_words = load_stopwords(stopwords_path) if stopwords_path else set()
         with open(path_file, "r", encoding="utf-8") as f:
             text = f.read()
+            tokens_list = str_tokenize_words(text)
+            text = " ".join([token for token in tokens_list if token not in stop_words])
 
         self.block_size = block_size
         self.encoder = get_encoder()
