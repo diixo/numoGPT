@@ -18,40 +18,6 @@ use_mingpt = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def generate(model: GPT, prompt="", num_samples=10, steps=20, do_sample=True):
-        
-    # tokenize the input prompt into integer input sequence
-    if use_mingpt:
-        tokenizer = BPETokenizer()
-        if prompt == '':
-            # to create unconditional samples...
-            # manually create a tensor with only the special <|endoftext|> token
-            # similar to what openai's code does here https://github.com/openai/gpt-2/blob/master/src/generate_unconditional_samples.py
-            x = torch.tensor([[tokenizer.encoder.encoder['<|endoftext|>']]], dtype=torch.long)
-        else:
-            x = tokenizer(prompt).to(device)
-    else:
-        tokenizer = GPT2Tokenizer.from_pretrained(model_type)
-        if prompt == '':
-            # to create unconditional samples...
-            # huggingface/transformers tokenizer special cases these strings
-            prompt = '<|endoftext|>'
-        encoded_input = tokenizer(prompt, return_tensors='pt').to(device)
-        x = encoded_input['input_ids']
-    
-    # we'll process all desired num_samples in a batch, so expand out the batch dim
-    x = x.expand(num_samples, -1)
-
-    # forward the model `steps` times to get samples, in a batch
-    y = model.generate(x, max_new_tokens=steps, do_sample=do_sample, top_k=50)
-
-    for i in range(num_samples):
-        out = tokenizer.decode(y[i].cpu().squeeze())
-        #out = tokenizer.decode(y[i].tolist())
-        print('-' * 80)
-        print(out)
-
-
 
 """
 def build_dataset_with_padding(texts, block_size):
@@ -98,9 +64,7 @@ def generate_n_words(
     tokens = dataset.encoder.encode(prompt)
     x = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
 
-    # Generate maximum of 2*n_words tokens (to cut-off unnecessary ones)
-    max_tokens = len(tokens) + 2 * n_words
-    generated_tokens = model.generate(x, max_new_tokens=max_tokens, temperature=temperature, top_k=top_k, do_sample=False)
+    generated_tokens = model.generate(x, max_new_tokens=n_words, temperature=temperature, top_k=top_k, do_sample=False)
 
     generated_text = dataset.encoder.decode(generated_tokens.squeeze().tolist())
 
@@ -113,22 +77,6 @@ def generate_n_words(
     print(trimmed_text)
     print('-' * 80)
 
-
-@torch.no_grad()
-def predict_next(model: GPT, dataset: TextFlattenDataset, prompt: str):
-    model.eval()
-
-    tokens = dataset.encoder.encode(prompt)
-    idx = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
-
-    idx_next = model.predict_next_word(idx, top_k=10)
-
-    #next_word = dataset.encoder.decode(next_id.squeeze().tolist())
-    next_word = dataset.encoder.decode([idx_next.item()])
-
-    print('-' * 80)
-    print(f"predict_next_word({prompt}:{next_word})")
-    print('-' * 80)
 
 
 @torch.no_grad()
@@ -189,7 +137,6 @@ def main():
 
     #generate(model=gpt, prompt="text", num_samples=5)
     generate_n_words(model=model, dataset=text_dataset, prompt="text", n_words=5)
-    #predict_next(model, text_dataset, "text")
     #predict_next_word(model, text_dataset, "text")
 
 
