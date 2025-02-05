@@ -3,6 +3,25 @@ from numogpt import bpe
 from numogpt.bpe import BPETokenizer, Encoder
 
 
+def test_tokenizer():
+    with open("data/data.txt", "r", encoding="utf-8") as f:
+        text = f.read()
+        text = text.lower()
+
+    e = bpe.get_encoder()
+    idxs = e.encode(text)
+    print(idxs)
+
+    tokens = e.pre_tokenize(text)
+
+    text = "".join(tokens)
+    idxs = e.encode(text)
+
+    print(idxs)
+    print(text)
+    print(str(len(tokens)) + ",", len(idxs))
+
+
 
 def test_gpt2():
     """ test gpt-2 models encoder on 50257 """
@@ -25,4 +44,4 @@ def main():
 
 if __name__ == "__main__":
     print("Hello AI!")
-    test_gpt2()
+    test_tokenizer()

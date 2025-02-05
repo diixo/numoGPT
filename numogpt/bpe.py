@@ -163,12 +163,12 @@ class Encoder:
         self.cache[token] = word
         return word
 
-
-    def encode(self, text):
-        """ string goes in, list of integers comes out """
-        bpe_idx = []
+    def pre_tokenize(self, text):
         # pre-tokenize the input text into string tokens (words, roughly speaking)
-        tokens = re.findall(self.pat, text)
+        return re.findall(self.pat, text)
+
+    def encode_tokens(self, tokens):
+        bpe_idx = []
         # process each token into BPE integers
         for token in tokens:
             # encode the token as a bytes (b'') object
@@ -182,6 +182,12 @@ class Encoder:
             # extend our running list of all output integers
             bpe_idx.extend(token_ix)
         return bpe_idx
+
+    def encode(self, text):
+        """ string goes in, list of integers comes out """
+        # pre-tokenize the input text into string tokens (words, roughly speaking)
+        tokens = self.pre_tokenize(text)
+        return self.encode_tokens(tokens)
 
 
     def encode_and_show_work(self, text):
