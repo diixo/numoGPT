@@ -69,8 +69,8 @@ class TextDataset(Dataset):
 
         with open(path_file, "r", encoding="utf-8") as f:
             text = f.read()
-            tokens_list = str_tokenize_words(text, stopwords)
-            text = " ".join(tokens_list)
+            # tokens_list = str_tokenize_words(text, stopwords)
+            # text = " ".join(tokens_list)
 
         #self.build_dataset_fixed_blocks(text, block_size)
         tokens = self.encoder.encode(text)

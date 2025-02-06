@@ -9,8 +9,8 @@ from pathlib import Path
 
 set_seed(3407)
 
-context_sz = 32
-max_iters = 5000
+context_sz = 8
+max_iters = 2000
 model_type = "gpt-numo"
 use_mingpt = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -98,7 +98,7 @@ def predict_next_word(model: GPT, dataset: TextDataset, word: str, device="cpu")
 
 def main():
 
-    text_dataset = TextDataset("data/train-nn.txt", block_size=context_sz, stopwords_path="data/stopwords.txt")
+    text_dataset = TextDataset("data/train-nn.txt", block_size=context_sz)
 
     gpt_config = GPT.get_default_config()
     gpt_config.model_type = model_type
