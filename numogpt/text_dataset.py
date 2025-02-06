@@ -20,7 +20,7 @@ def str_tokenize_words(s: str, stopwords=set()):
 
 class TextDataset(Dataset):
 
-    def build_dataset_fixed_blocks(self, text, block_size):
+    def build_dataset_words(self, text, block_size):
         pad_token_id = 50256 #encode("<|endoftext|>")
         words = self.encoder.pre_tokenize(text)
 
@@ -52,7 +52,7 @@ class TextDataset(Dataset):
         return blocks
 
 
-    def build_dataset(self, tokens, block_size):
+    def build_dataset_indexed(self, tokens, block_size):
         X, Y = [], []
         for i in range(len(tokens) - block_size):
             X.append(tokens[i : i + block_size])
@@ -72,9 +72,9 @@ class TextDataset(Dataset):
             # tokens_list = str_tokenize_words(text, stopwords)
             # text = " ".join(tokens_list)
 
-        #self.build_dataset_fixed_blocks(text, block_size)
+        #self.build_dataset_words(text, block_size)
         tokens = self.encoder.encode(text)
-        self.X, self.Y = self.build_dataset(tokens, block_size)
+        self.X, self.Y = self.build_dataset_indexed(tokens, block_size)
         assert(len(self.X) == len(self.Y))
 
 

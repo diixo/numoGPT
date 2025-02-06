@@ -13,11 +13,11 @@ Working demo: [demo.py](demo.py)
 * n_layer: **4**
 * n_head:  **4**
 * n_embd:  **64**
-* context: **32**
+* block:   **8**
 * params:  **3.42M**
 
 
-### context-size=32:
+### context-size~8:
 ```
 number of parameters: 3.42M
 running on device: cpu
@@ -27,24 +27,19 @@ running on device: cpu
 ...on 400th iter...
 ...on 500th iter...
 ...
-...on 4500th iter...
-...on 4600th iter...
-...on 4700th iter...
-...on 4800th iter...
-...on 4900th iter...
-...on 5000th iter...
-...finished 5000 iter(s)
+...on 1500th iter...
+...on 1600th iter...
+...on 1700th iter...
+...on 1800th iter...
+...on 1900th iter...
+...finished 2000 iter(s)
 --------------------------------------------------------------------------------
-evaluate_gpt:: sz=174, batch_sz=32
-val_loss=0.1330, perplexity(PPL)=1.1422
+evaluate_gpt:: sz=321, batch_sz=32
+val_loss=2.3775, perplexity(PPL)=10.7779
 --------------------------------------------------------------------------------
-text cluster result weight list
+text and the clustering results
 --------------------------------------------------------------------------------
 ```
-
-
-
-### context-size=64:
 
 
 
