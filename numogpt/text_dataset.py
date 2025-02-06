@@ -14,7 +14,7 @@ def load_stopwords(file_path: str):
 
 # (wordacy-nn) original modified: #removed hypher
 def str_tokenize_words(s: str, stopwords=set()):
-    words = re.findall("(\.?\w[\w'\.&]*\w|\w\+*#?)", str.lower(s))
+    words = re.findall("(\.?\w[\w'\.&]*\w|\w\+*#?)", s)
     if words: return [w for w in words if w not in stopwords]
     return []
 
@@ -24,32 +24,38 @@ class TextDataset(Dataset):
         pad_token_id = 50256 #encode("<|endoftext|>")
         words = self.encoder.pre_tokenize(text)
 
-        current_tokens = []     # for idxs
-        current_wtokens = []    # for words
-
-        blocks = []             # for idxs
-        wblocks = []            # for words
+        current_tokens = []
+        blocks_X = []
+        blocks_Y = []
 
         for word in words:
             word_tokens = self.encoder.encode(word)
 
-            if len(current_tokens) + len(word_tokens) > block_size:
+            if len(current_tokens) + len(word_tokens) > (block_size-1):
                 if pad_token_id is not None:
                     current_tokens += [pad_token_id] * (block_size - len(current_tokens))
-                blocks.append(current_tokens)
+                blocks_X.append(current_tokens)
+
+                # fill next_tokens with shifting from current_tokens[]
+                next_tokens = current_tokens[1:]
+                next_tokens.append(pad_token_id)
+                blocks_Y.append(next_tokens)
+
                 current_tokens = []
-                current_wtokens = []
             current_tokens.extend(word_tokens)
-            current_wtokens.append(word)
 
         # fill last block if it exist
         if current_tokens:
             if pad_token_id is not None:
                 current_tokens += [pad_token_id] * (block_size - len(current_tokens))
-            blocks.append(current_tokens)
-            wblocks.append(current_wtokens)
+            blocks_X.append(current_tokens)
 
-        return blocks
+            # fill next_tokens with shifting from current_tokens[]
+            next_tokens = current_tokens[1:]
+            next_tokens.append(pad_token_id)
+            blocks_Y.append(next_tokens)
+        assert(len(blocks_X) == len(blocks_Y))
+        return torch.tensor(blocks_X), torch.tensor(blocks_Y)
 
 
     def build_dataset_indexed(self, tokens, block_size):
@@ -72,10 +78,11 @@ class TextDataset(Dataset):
             # tokens_list = str_tokenize_words(text, stopwords)
             # text = " ".join(tokens_list)
 
-        #self.build_dataset_words(text, block_size)
         tokens = self.encoder.encode(text)
         self.X, self.Y = self.build_dataset_indexed(tokens, block_size)
+        #self.X, self.Y = self.build_dataset_words(text.lower(), block_size)
         assert(len(self.X) == len(self.Y))
+        print("TextDataset.sz=", len(self.X))
 
 
     def __len__(self):
