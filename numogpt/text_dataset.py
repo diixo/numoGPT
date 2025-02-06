@@ -18,7 +18,7 @@ def str_tokenize_words(s: str, stopwords=set()):
     if words: return [w for w in words if w not in stopwords]
     return []
 
-class TextFlattenDataset(Dataset):
+class TextDataset(Dataset):
 
     def build_dataset_fixed_blocks(self, text, block_size):
         pad_token_id = 50256 #encode("<|endoftext|>")

@@ -1,10 +1,8 @@
 import torch
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from numogpt.utils import set_seed, evaluate_gpt
 from numogpt.model import GPT
-from numogpt.bpe import BPETokenizer, get_encoder
 from numogpt.trainer import Trainer
-from numogpt.text_dataset import TextFlattenDataset
+from numogpt.text_dataset import TextDataset
 from keras.preprocessing.sequence import pad_sequences
 from pathlib import Path
 
@@ -32,7 +30,7 @@ def build_dataset_with_padding(texts, block_size):
 """
 
 
-def generate_text(model: GPT, text_dataset: TextFlattenDataset, prompt: str, max_tokens=50):
+def generate_text(model: GPT, text_dataset: TextDataset, prompt: str, max_tokens=50):
     model.eval()
 
     tokens = text_dataset.encoder.encode(prompt)
@@ -53,7 +51,7 @@ def generate_text(model: GPT, text_dataset: TextFlattenDataset, prompt: str, max
 
 def generate_n_words(
         model: GPT,
-        dataset: TextFlattenDataset,
+        dataset: TextDataset,
         prompt: str,
         n_words=10,
         temperature=1.0,
@@ -80,7 +78,7 @@ def generate_n_words(
 
 
 @torch.no_grad()
-def predict_next_word(model: GPT, dataset: TextFlattenDataset, word: str, device="cpu"):
+def predict_next_word(model: GPT, dataset: TextDataset, word: str, device="cpu"):
     model.eval()
 
     tokens = dataset.encoder.encode(word)
@@ -100,7 +98,7 @@ def predict_next_word(model: GPT, dataset: TextFlattenDataset, word: str, device
 
 def main():
 
-    text_dataset = TextFlattenDataset("data/train-nn.txt", block_size=context_sz, stopwords_path="data/stopwords.txt")
+    text_dataset = TextDataset("data/train-nn.txt", block_size=context_sz, stopwords_path="data/stopwords.txt")
 
     gpt_config = GPT.get_default_config()
     gpt_config.model_type = model_type
