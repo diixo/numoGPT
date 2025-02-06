@@ -20,6 +20,38 @@ def str_tokenize_words(s: str, stopwords=set()):
 
 class TextFlattenDataset(Dataset):
 
+    def build_dataset_fixed_blocks(self, text, block_size):
+        pad_token_id = 50256 #encode("<|endoftext|>")
+        words = self.encoder.pre_tokenize(text)
+
+        current_tokens = []     # for idxs
+        current_wtokens = []    # for words
+
+        blocks = []             # for idxs
+        wblocks = []            # for words
+
+        for word in words:
+            word_tokens = self.encoder.encode(word)
+
+            if len(current_tokens) + len(word_tokens) > block_size:
+                if pad_token_id is not None:
+                    current_tokens += [pad_token_id] * (block_size - len(current_tokens))
+                blocks.append(current_tokens)
+                current_tokens = []
+                current_wtokens = []
+            current_tokens.extend(word_tokens)
+            current_wtokens.append(word)
+
+        # fill last block if it exist
+        if current_tokens:
+            if pad_token_id is not None:
+                current_tokens += [pad_token_id] * (block_size - len(current_tokens))
+            blocks.append(current_tokens)
+            wblocks.append(current_wtokens)
+
+        return blocks
+
+
     def build_dataset(self, tokens, block_size):
         X, Y = [], []
         for i in range(len(tokens) - block_size):
@@ -36,20 +68,11 @@ class TextFlattenDataset(Dataset):
         stopwords = load_stopwords(stopwords_path) if stopwords_path else set()
 
         with open(path_file, "r", encoding="utf-8") as f:
-            max_len = 0
             text = f.read()
             tokens_list = str_tokenize_words(text, stopwords)
-
-            # determine maximum
-            for i in range(len(tokens_list) - block_size):
-                txt = " ".join(tokens_list[i : i + block_size])
-                sz = len(self.encoder.encode(txt))
-                max_len =  sz if sz > max_len else max_len
-            print("max_len=", max_len)
-
             text = " ".join(tokens_list)
 
-
+        #self.build_dataset_fixed_blocks(text, block_size)
         tokens = self.encoder.encode(text)
         self.X, self.Y = self.build_dataset(tokens, block_size)
         assert(len(self.X) == len(self.Y))

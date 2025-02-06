@@ -1,6 +1,12 @@
 
 from numogpt import bpe
 from numogpt.bpe import BPETokenizer, Encoder
+from numogpt.text_dataset import TextFlattenDataset
+
+
+def test_tokenize_blocks():
+    dataset = TextFlattenDataset("data/train-nn.txt", 8, "data/stopwords.txt")
+    print(len(dataset))
 
 
 def test_tokenizer():
@@ -43,5 +49,4 @@ def main():
 
 
 if __name__ == "__main__":
-    print("Hello AI!")
-    test_tokenizer()
+    test_tokenize_blocks()
