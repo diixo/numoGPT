@@ -10,8 +10,8 @@ The majority of the complexity is just being clever with batching (both across e
 ## Updates:
 * [Demo](demo.py) has been implemented, that demonstrated training on input [train text](data/train-nn.txt).
 * Embedded openai' GPT2: [tokens volabulary](gpt-2/vocab.bpe), [json-vocabulary](gpt-2/encoder.json) of indices for encoder.
-* Implemented filtering by stopwords: ([stopwords.txt](data/stopwords.txt)).
-* Implemented **TextDataset** ([text_dataset.py](numogpt/text_dataset.py)) with splitting the input text into token-blocks.
+* Implemented filtering by customized stopwords: [stopwords.txt](data/stopwords.txt).
+* Implemented pytorch **TextDataset** ([text_dataset.py](numogpt/text_dataset.py)) with splitting the input text into token-blocks.
 
 
 ## Model:
