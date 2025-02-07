@@ -47,6 +47,10 @@ running on device: cpu
 --------------------------------------------------------------------------------
 evaluate_gpt epoch:: batches=28, batch_sz=32
 val_loss=0.9435, perplexity(PPL)=2.5691
+```
+
+### Text generation by specified prompt:
+```
 --------------------------------------------------------------------------------
 text clustering models proposed consider
 --------------------------------------------------------------------------------

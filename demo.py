@@ -69,10 +69,10 @@ def generate_n_words(
     cleaned_text = generated_text.replace("<|endoftext|>", "").replace("\n", " ")
 
     words = cleaned_text.split()
-    trimmed_text = " ".join(words[:n_words])
+    trimmed_text = " ".join(words[1:])
 
     print('-' * 80)
-    print(trimmed_text)
+    print(f"prompt (\"{prompt}\"):", trimmed_text)
     print('-' * 80)
 
 

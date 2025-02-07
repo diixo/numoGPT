@@ -115,7 +115,7 @@ def evaluate_gpt(model, dataset: Dataset, batch_sz: int, device: str):
 
     dataloader = DataLoader(dataset, batch_size=batch_sz, shuffle=False, pin_memory=True, num_workers=0)
 
-    print(f"evaluate_gpt:: batches={len(dataloader)}/epoch, batch_sz={batch_sz}")
+    print(f"evaluate_gpt epoch:: batches={len(dataloader)}, batch_sz={batch_sz}")
 
     with torch.no_grad():
         for batch in dataloader:
