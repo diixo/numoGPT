@@ -6,10 +6,10 @@ The majority of the complexity is just being clever with batching (both across e
 
 
 ## Updates:
-* Alternative repository of minGPT, implemented by Andrej Karpathy.
-* Demo has been implemented additionally, that demonstrated training on an input text file.
-* Embedded openai's: tokens volabulary, json-vocabulary indices of encoder
-* Added stop-words processing
+* Alternative repository of [minGPT](https://github.com/karpathy/minGPT), implemented by Andrej Karpathy.
+* Demo has been implemented additionally, that demonstrated training on an input demo [train text](data/train-nn.txt).
+* Embedded openai' GPT2: [tokens volabulary](gpt-2/vocab.bpe), [json-vocabulary](gpt-2/encoder.json) of indices for encoder 
+* Added stopwords filtering ([stopwords.txt](data/stopwords.txt))
 * Improvemenets the text_dataset with token-blocks compose to feedline as input training
 
 
