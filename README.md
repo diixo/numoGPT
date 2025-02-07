@@ -7,10 +7,10 @@ The majority of the complexity is just being clever with batching (both across e
 
 ## Updates:
 * Alternative repository of [minGPT](https://github.com/karpathy/minGPT), implemented by Andrej Karpathy.
-* Demo has been implemented additionally, that demonstrated training on an input demo [train text](data/train-nn.txt).
-* Embedded openai' GPT2: [tokens volabulary](gpt-2/vocab.bpe), [json-vocabulary](gpt-2/encoder.json) of indices for encoder 
-* Added stopwords filtering ([stopwords.txt](data/stopwords.txt))
-* Improvemenets the text_dataset with token-blocks compose to feedline as input training
+* Demo has been implemented additionally, that demonstrated training on input [train text](data/train-nn.txt).
+* Embedded openai' GPT2: [tokens volabulary](gpt-2/vocab.bpe), [json-vocabulary](gpt-2/encoder.json) of indices for encoder.
+* Implemented filtering by stopwords: ([stopwords.txt](data/stopwords.txt)).
+* Implemented **TextDataset** ([text_dataset.py](numogpt/text_dataset.py)) with splitting the input text into token-blocks.
 
 
 ## Model:
@@ -26,7 +26,7 @@ Working demo: [demo.py](demo.py)
 * stop_w:  **TRUE**
 
 
-### tokens_block size~8:
+### tokens_block size=8:
 ```
 tokens-word distribution: {5: 191, 7: 256, 4: 88, 3: 29, 6: 306, 2: 1, 1: 1}
 TextDataset.sz=873, block_size=8, epoch_size=110
@@ -45,7 +45,7 @@ running on device: cpu
 ...on 2000th iter...
 ...finished 2000 iter(s)
 --------------------------------------------------------------------------------
-evaluate_gpt:: sz=28, batch_sz=32
+evaluate_gpt epoch:: batches=28, batch_sz=32
 val_loss=0.9435, perplexity(PPL)=2.5691
 --------------------------------------------------------------------------------
 text clustering models proposed consider
