@@ -8,6 +8,7 @@ import random
 from ast import literal_eval
 
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import Dataset, DataLoader
 
@@ -136,3 +137,12 @@ def evaluate_gpt(model, dataset: Dataset, batch_sz: int, device: str):
     ppl = math.exp(avg_loss)
 
     return avg_loss, ppl
+
+
+def plot_loss(losses: list):
+    plt.plot(losses, label="Training Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training Loss over Epoch")
+    plt.legend()
+    plt.show()

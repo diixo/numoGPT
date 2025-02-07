@@ -1,5 +1,5 @@
 import torch
-from numogpt.utils import set_seed, evaluate_gpt
+from numogpt.utils import set_seed, evaluate_gpt, plot_loss
 from numogpt.model import GPT
 from numogpt.trainer import Trainer
 from numogpt.text_dataset import TextDataset
@@ -121,10 +121,11 @@ def main():
     if Path(model_path).exists():
         model.load_state_dict(torch.load(model_path))
     else:
-        trainer.run()
+        losses = trainer.run()
         print('-' * 80)
 
         torch.save(model.state_dict(), model_path)
+        plot_loss(losses)
 
     #---------------------------------------------------------------------------
     print('-' * 80)

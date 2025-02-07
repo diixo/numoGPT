@@ -50,6 +50,8 @@ evaluate_gpt epoch:: batches=28, batch_sz=32
 val_loss=0.9435, perplexity(PPL)=2.5691
 ```
 
+![numoGPT](assets/figure-1.png)
+
 ### Text generation by specified prompt:
 ```
 --------------------------------------------------------------------------------

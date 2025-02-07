@@ -69,6 +69,7 @@ class Trainer:
 
 
     def run(self):
+        losses = []
         model, config = self.model, self.config
 
         # setup the optimizer
@@ -101,6 +102,7 @@ class Trainer:
 
             # forward the model
             logits, self.loss = model(x, y)
+            losses.append(self.loss.item())
 
             # backprop and update the parameters
             model.zero_grad(set_to_none=True)
@@ -121,3 +123,5 @@ class Trainer:
             if config.max_iters is not None and self.iter_num >= config.max_iters:
                 print(f"...finished {self.iter_num} iter(s)")
                 break
+
+        return losses

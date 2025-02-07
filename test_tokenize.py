@@ -1,11 +1,11 @@
 
 from numogpt import bpe
 from numogpt.bpe import BPETokenizer, Encoder
-from numogpt.text_dataset import TextFlattenDataset
+from numogpt.text_dataset import TextDataset
 
 
 def test_tokenize_blocks():
-    dataset = TextFlattenDataset("data/train-nn.txt", 8, "data/stopwords.txt")
+    dataset = TextDataset("data/train-nn.txt", 8, "data/stopwords.txt")
     print(len(dataset))
 
 
