@@ -28,6 +28,9 @@ class TextDataset(Dataset):
         blocks_X = []
         blocks_Y = []
 
+        i = 0
+        stat = dict()
+
         for word in words:
             word_tokens = self.encoder.encode(word)
 
@@ -41,7 +44,11 @@ class TextDataset(Dataset):
                 next_tokens.append(pad_token_id)
                 blocks_Y.append(next_tokens)
 
+                stat[i] = stat.get(i, 0) + 1
+                i = 0
                 current_tokens = []
+
+            i += 1
             current_tokens.extend(word_tokens)
 
         # fill last block if it exist
@@ -54,7 +61,9 @@ class TextDataset(Dataset):
             next_tokens = current_tokens[1:]
             next_tokens.append(pad_token_id)
             blocks_Y.append(next_tokens)
+
         assert(len(blocks_X) == len(blocks_Y))
+        print("tokens-word distribution:", stat)
         return torch.tensor(blocks_X), torch.tensor(blocks_Y)
 
 
@@ -82,7 +91,7 @@ class TextDataset(Dataset):
         #self.X, self.Y = self.build_dataset_indexed(tokens, block_size)
         self.X, self.Y = self.build_dataset_words(text, block_size)
         assert(len(self.X) == len(self.Y))
-        print(f"TextDataset.sz={len(self.X)}, block_size={block_size}, epoch_size={int(len(self.X)/block_size+1)}")
+        print(f"TextDataset.sz={len(self.X)}, block_size={block_size}, epoch_blocks={int(len(self.X)/block_size+1)}")
 
 
     def __len__(self):

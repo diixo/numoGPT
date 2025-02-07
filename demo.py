@@ -9,7 +9,7 @@ from pathlib import Path
 
 set_seed(3407)
 
-context_sz = 8
+tokens_block = 8
 max_iters = 2000
 model_type = "gpt-numo"
 use_mingpt = True
@@ -98,7 +98,7 @@ def predict_next_word(model: GPT, dataset: TextDataset, word: str, device="cpu")
 
 def main():
 
-    text_dataset = TextDataset("data/train-nn.txt", block_size=context_sz)
+    text_dataset = TextDataset("data/train-nn.txt", tokens_block, "data/stopwords.txt")
 
     gpt_config = GPT.get_default_config()
     gpt_config.model_type = model_type
@@ -107,7 +107,7 @@ def main():
 
     model = GPT(gpt_config)
 
-    model_path = f"models/model-{context_sz}-{gpt_config.n_layer}-{gpt_config.n_head}-{gpt_config.n_embd}-{int(max_iters/1000)}k.pth"
+    model_path = f"models/model-{tokens_block}-{gpt_config.n_layer}-{gpt_config.n_head}-{gpt_config.n_embd}-{int(max_iters/1000)}k.pth"
 
     #---------------------------------------------------------------------------
 

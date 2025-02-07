@@ -1,8 +1,16 @@
 # numoGPT
 
+A minimal PyTorch re-implementation of OpenAI GPT (Generative Pretrained Transformer) training [GPT](https://github.com/openai/gpt-2), both training and inference. numoGPT tries to be small, clean, interpretable and educational, as most of the currently available GPT model implementations can a bit sprawling. 
+GPT is not a complicated model and this implementation is appropriately about 300 lines of code (see [numogpt/model.py](numpgpt/model.py)). All that's going on is that a sequence of indices feeds into a [Transformer](https://arxiv.org/abs/1706.03762), and a probability distribution over the next index in the sequence comes out. 
+The majority of the complexity is just being clever with batching (both across examples and over sequence length) for efficiency.
+
+
+## Updates:
 * Alternative repository of minGPT, implemented by Andrej Karpathy.
 * Demo has been implemented additionally, that demonstrated training on an input text file.
 * Embedded openai's: tokens volabulary, json-vocabulary indices of encoder
+* Added stop-words processing
+* Improvemenets the text_dataset with token-blocks compose to feedline as input training
 
 
 ## Model:
@@ -15,10 +23,13 @@ Working demo: [demo.py](demo.py)
 * n_embd:  **64**
 * block:   **8**
 * params:  **3.42M**
+* stop_w:  **TRUE**
 
 
-### context-size~8:
+### tokens_block size~8:
 ```
+tokens-word distribution: {5: 191, 7: 256, 4: 88, 3: 29, 6: 306, 2: 1, 1: 1}
+TextDataset.sz=873, block_size=8, epoch_size=110
 number of parameters: 3.42M
 running on device: cpu
 ...on 100th iter...
@@ -34,10 +45,10 @@ running on device: cpu
 ...on 2000th iter...
 ...finished 2000 iter(s)
 --------------------------------------------------------------------------------
-evaluate_gpt:: sz=40, batch_sz=32
-val_loss=1.4798, perplexity(PPL)=4.3919
+evaluate_gpt:: sz=28, batch_sz=32
+val_loss=0.9435, perplexity(PPL)=2.5691
 --------------------------------------------------------------------------------
-text and the clustering results
+text clustering models proposed consider
 --------------------------------------------------------------------------------
 ```
 
