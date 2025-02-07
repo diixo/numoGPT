@@ -127,7 +127,7 @@ def main():
         torch.save(model.state_dict(), model_path)
 
     #---------------------------------------------------------------------------
-
+    print('-' * 80)
     val_loss, ppl = evaluate_gpt(model, text_dataset, train_config.batch_size, train_config.device)
     print(f"val_loss={val_loss:.4f}, perplexity(PPL)={ppl:.4f}")
 

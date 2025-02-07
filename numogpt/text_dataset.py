@@ -63,7 +63,7 @@ class TextDataset(Dataset):
             blocks_Y.append(next_tokens)
 
         assert(len(blocks_X) == len(blocks_Y))
-        print("tokens-word distribution:", stat)
+        print("tokens/block distribution:", stat)
         return torch.tensor(blocks_X), torch.tensor(blocks_Y)
 
 
@@ -91,7 +91,7 @@ class TextDataset(Dataset):
         #self.X, self.Y = self.build_dataset_indexed(tokens, block_size)
         self.X, self.Y = self.build_dataset_words(text, block_size)
         assert(len(self.X) == len(self.Y))
-        print(f"TextDataset.sz={len(self.X)}, block_size={block_size}, epoch_blocks={int(len(self.X)/block_size+1)}")
+        print(f"TextDataset.sz={len(self.X)}, block_size={block_size}, blocks={int(len(self.X)/block_size+1)}")
 
 
     def __len__(self):
