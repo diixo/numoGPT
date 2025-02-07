@@ -22,9 +22,9 @@ Working demo: [demo.py](demo.py)
 * n_layer: **4**
 * n_head:  **4**
 * n_embd:  **64**
-* block:   **8**
+* block_sz:   **8**
 * params:  **3.42M**
-* stop_w:  **TRUE**
+* **stopwords**
 
 
 ### tokens_block size=8:
