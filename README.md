@@ -52,7 +52,7 @@ val_loss=0.9435, perplexity(PPL)=2.5691
 ### Text generation by specified prompt:
 ```
 --------------------------------------------------------------------------------
-text clustering models proposed consider
+prompt ("text"): clustering models proposed consider
 --------------------------------------------------------------------------------
 ```
 
