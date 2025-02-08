@@ -87,8 +87,6 @@ class TextDataset(Dataset):
             tokens_list = str_tokenize_words(text, stopwords)
             text = " ".join(tokens_list)
 
-        #tokens = self.encoder.encode(text)
-        #self.X, self.Y = self.build_dataset_indexed(tokens, block_size)
         self.X, self.Y = self.build_dataset_words(text, block_size)
         assert(len(self.X) == len(self.Y))
         #print(f"TextDataset.sz={len(self.X)}, block_size={block_size}, blocks={int(len(self.X)/block_size+1)}")
