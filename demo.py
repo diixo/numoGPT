@@ -10,7 +10,7 @@ from pathlib import Path
 set_seed(3407)
 
 tokens_block = 6
-max_iters = 2000
+max_iters = 5000
 model_type = "gpt-numo"
 use_mingpt = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
