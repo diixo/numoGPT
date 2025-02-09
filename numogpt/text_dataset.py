@@ -67,14 +67,6 @@ class TextDataset(Dataset):
         return torch.tensor(blocks_X), torch.tensor(blocks_Y)
 
 
-    def build_dataset_indexed(self, tokens, block_size):
-        X, Y = [], []
-        for i in range(len(tokens) - block_size):
-            X.append(tokens[i : i + block_size])
-            Y.append(tokens[i + 1 : i + block_size + 1])
-        return torch.tensor(X), torch.tensor(Y)
-
-
     def __init__(self, path_file: str, block_size: int, stopwords_path: str=None):
 
         self.block_size = block_size
@@ -100,6 +92,75 @@ class TextDataset(Dataset):
 
     def get_vocab_size(self):
         return len(self.encoder.encoder.items())
+
+    def get_block_size(self):
+        return self.block_size
+
+
+class WordacyEncoder:
+
+    def __init__(self):
+        self.word_to_id = dict()
+        self.id_to_word = dict()
+        self.stopwords = set()
+        self.PAD_TOKEN = "[UNK]"
+
+
+    def build_vocab(self, text: str, stopwords=set()):
+        tokens = str_tokenize_words(text, set())
+        self.word_to_id = {token: id for id, token in enumerate(dict.fromkeys(tokens))}
+        self.id_to_word = {id: token for token, id in self.word_to_id.items()}
+        self.stopwords = stopwords
+
+        self.word_to_id[self.PAD_TOKEN] = self.word_to_id.get(self.PAD_TOKEN, len(self.word_to_id))
+        self.id_to_word[self.word_to_id[self.PAD_TOKEN]] = self.PAD_TOKEN
+        assert(len(self.word_to_id) == len(self.id_to_word))
+
+
+    def encode(self, text: str):
+        tokens = str_tokenize_words(text, self.stopwords)
+        return [ self.word_to_id.get(token, self.word_to_id[self.PAD_TOKEN]) for token in tokens ]
+
+
+    def decode(self, ids: list):
+        words = [ self.id_to_word.get(id, self.id_to_word[self.word_to_id[self.PAD_TOKEN]]) for id in ids ]
+        return " ".join(words)
+
+
+class TextWordacyDataset(Dataset):
+
+    def build_dataset(self, tokens, block_size):
+        X, Y = [], []
+        for i in range(len(tokens) - block_size):
+            X.append(tokens[i : i + block_size])
+            Y.append(tokens[i + 1 : i + block_size + 1])
+        return torch.tensor(X), torch.tensor(Y)
+
+
+    def __init__(self, path_file: str, block_size: int, stopwords_path: str=None):
+
+        self.block_size = block_size
+        self.encoder = WordacyEncoder()
+
+        with open(path_file, "r", encoding="utf-8") as f:
+            text = f.read().lower()
+            stopwords = load_stopwords(stopwords_path) if stopwords_path else set()
+            self.encoder.build_vocab(text, stopwords)
+
+        tokens = self.encoder.encode(text)
+        self.X, self.Y = self.build_dataset(tokens, block_size)
+        assert(len(self.X) == len(self.Y))
+        print(f"TextWordacyDataset.sz={len(self.X)}, block_size={block_size}, blocks={int(len(self.X)/block_size+1)}")
+
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.Y[idx]
+
+    def get_vocab_size(self, n: int = 8):
+        return (len(self.encoder.word_to_id) + n-1) // n * n
 
     def get_block_size(self):
         return self.block_size

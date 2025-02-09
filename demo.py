@@ -2,7 +2,7 @@ import torch
 from numogpt.utils import set_seed, evaluate_gpt, plot_loss
 from numogpt.model import GPT
 from numogpt.trainer import Trainer
-from numogpt.text_dataset import TextDataset
+from numogpt.text_dataset import TextDataset, TextWordacyDataset
 from keras.preprocessing.sequence import pad_sequences
 from pathlib import Path
 
@@ -116,13 +116,13 @@ def main():
     train_config.max_iters = max_iters
     train_config.batch_size = 32
     train_config.num_workers = 0
+    train_config.grad_norm_clip = 1.0
     trainer = Trainer(train_config, model, text_dataset)
 
     if Path(model_path).exists():
         model.load_state_dict(torch.load(model_path))
     else:
         losses = trainer.run()
-        print('-' * 80)
 
         torch.save(model.state_dict(), model_path)
         plot_loss(losses)
