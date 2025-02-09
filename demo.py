@@ -9,7 +9,7 @@ from pathlib import Path
 
 set_seed(3407)
 
-tokens_block = 8
+tokens_block = 6
 max_iters = 2000
 model_type = "gpt-numo"
 use_mingpt = True
@@ -98,7 +98,7 @@ def predict_next_word(model: GPT, dataset: TextDataset, word: str, device="cpu")
 
 def main():
 
-    text_dataset = TextDataset("data/train-nn.txt", tokens_block, "data/stopwords.txt")
+    text_dataset = TextWordacyDataset("data/train-nn.txt", tokens_block, "data/stopwords.txt")
 
     gpt_config = GPT.get_default_config()
     gpt_config.model_type = model_type
@@ -114,7 +114,7 @@ def main():
     train_config = Trainer.get_default_config()
     train_config.device = "cpu"
     train_config.max_iters = max_iters
-    train_config.batch_size = 32
+    train_config.batch_size = 64
     train_config.num_workers = 0
     train_config.grad_norm_clip = 1.0
     trainer = Trainer(train_config, model, text_dataset)
