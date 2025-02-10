@@ -54,10 +54,14 @@ class CausalSelfAttention(nn.Module):
 
 
     def forward(self, x):
-        B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
+        B, T, C = x.size() # B = batch size, T = tokens sequence length, C = embedding dimensionality (n_embd)
 
         # calculate query, key, values for all heads in batch and move head forward to be the batch dim
         q, k, v  = self.c_attn(x).split(self.n_embd, dim=2)
+        # c_attn() transform (B, T, n_embd) --> (B, T, 3*n_embd)
+        # q, k, v <-- (B, T, 3*n_embd).split by (n_embd, dim=2)
+        # q, k, v = (B, T, n_embd)
+
         k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
@@ -73,6 +77,7 @@ class CausalSelfAttention(nn.Module):
         # output projection
         y = self.resid_dropout(self.c_proj(y))
         return y
+
 
 class Block(nn.Module):
     """ an unassuming Transformer block """
@@ -117,7 +122,8 @@ class GPT(nn.Module):
         C.resid_pdrop = 0.1
         C.attn_pdrop = 0.1
         return C
-    
+
+
     def __init__(self, config):
         super().__init__()
         assert config.vocab_size is not None
@@ -269,6 +275,7 @@ class GPT(nn.Module):
         ]
         optimizer = torch.optim.AdamW(optim_groups, lr=train_config.learning_rate, betas=train_config.betas)
         return optimizer
+
 
     def forward(self, idx, targets=None):
         device = idx.device

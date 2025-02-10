@@ -116,7 +116,7 @@ def main():
     train_config.max_iters = max_iters
     train_config.batch_size = 64
     train_config.num_workers = 0
-    train_config.grad_norm_clip = 1.0
+    train_config.grad_norm_clip = 0.5
     trainer = Trainer(train_config, model, text_dataset)
 
     if Path(model_path).exists():
